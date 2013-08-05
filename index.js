@@ -44,11 +44,39 @@ ProxyRequest.prototype.save_request = function (request, callback) {
 }
 
 ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, callback) {
-    var request, proxy
-    proxy = proxy_list.fetch()
-    request = http.request(_.extend(saved_request, proxy), _.bind(callback, this))
-    request.write(saved_request.body)
-    request.end()
+    var used_proxies = [],
+        that = this,
+        proxy
+    ;(function make_request () {
+        proxy = proxy_list.fetch(used_proxies)
+        console.log('%s via %s', saved_request.path, proxy)
+        var request = http.request(_.extend(saved_request, proxy), function (response) {
+            console.log(response.statusCode)
+            if (response.statusCode >= 200 && response.statusCode < 400) {
+                proxy_list.succeded(proxy)
+                proxy_list.failed(used_proxies)
+                callback.call(that, response)
+            } else if (used_proxies.length < 5) {
+                used_proxies.push(proxy)
+                make_request()
+            } else {
+                proxy_list.failed(used_proxies)
+                callback.call(that, response)
+            }
+        })
+        request.write(saved_request.body)
+        request.end()
+        request.on('error', function (e) {
+            console.log('Proxy error: ' + e)
+            used_proxies.push(proxy)
+            make_request()
+        })
+        request.setTimeout(30000, function () {
+            console.log('Proxy timeout')
+            used_proxies.push(proxy)
+            make_request()
+        })
+    }())
 }
 
 ProxyRequest.prototype.pipe_response = function (src_response, dst_response) {
