@@ -71,7 +71,7 @@ ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, call
             used_proxies.push(proxy)
             make_request()
         })
-        request.setTimeout(30000, function () {
+        request.setTimeout(10000, function () {
             console.log('Proxy timeout')
             used_proxies.push(proxy)
             make_request()
