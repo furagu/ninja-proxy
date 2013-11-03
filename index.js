@@ -1,7 +1,6 @@
 var http = require('http'),
     util = require('util'),
     events = require("events"),
-    sys = require('sys'),
     url = require('url'),
     buffertools = require('buffertools'),
     _ = require('underscore'),
@@ -49,8 +48,6 @@ ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, call
         that = this,
         proxy
     ;(function make_request () {
-        console.log('used')
-        console.dir(used_proxies)
         proxy = proxy_list.getProxy(used_proxies)
         console.log('%s via %s', saved_request.path, proxy)
         var request = http.request(that.set_request_proxy(saved_request, proxy), function (response) {
