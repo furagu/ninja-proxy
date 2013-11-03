@@ -8,7 +8,8 @@ var http = require('http'),
     ProxyList = require('./lib/proxy-list.js')
 
 
-var proxies = ProxyList(__dirname + '/proxies.txt')
+var proxies = new ProxyList()
+proxies.loadFromFile(__dirname + '/proxies.txt') // TODO: fs.watch for filename and reload proxy list on change
 
 http.createServer(function(request, response) {
     ProxyRequest(request, response, proxies)
@@ -48,13 +49,15 @@ ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, call
         that = this,
         proxy
     ;(function make_request () {
-        proxy = proxy_list.fetch(used_proxies)
+        console.log('used')
+        console.dir(used_proxies)
+        proxy = proxy_list.getProxy(used_proxies)
         console.log('%s via %s', saved_request.path, proxy)
-        var request = http.request(_.extend(saved_request, proxy), function (response) {
+        var request = http.request(that.set_request_proxy(saved_request, proxy), function (response) {
             console.log(response.statusCode)
             if (response.statusCode >= 200 && response.statusCode < 400) {
-                proxy_list.succeded(proxy)
-                proxy_list.failed(used_proxies)
+                proxy_list.proxySucceeded(proxy)
+                proxy_list.proxyFailed(used_proxies)
                 callback.call(that, response)
             } else if (used_proxies.length < 5) {
                 used_proxies.push(proxy)
@@ -82,4 +85,9 @@ ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, call
 ProxyRequest.prototype.pipe_response = function (src_response, dst_response) {
     dst_response.writeHead(src_response.statusCode, src_response.headers)
     src_response.pipe(dst_response)
+}
+
+ProxyRequest.prototype.set_request_proxy = function (request, proxy) {
+    var parsedProxy = _.object(['host', 'port'], proxy.split(':'))
+    return _.extend(request, parsedProxy)
 }
