@@ -31,3 +31,7 @@ node index.js
 
 Server listens on 127.0.0.1:8080. Set this address as a proxy in the software or program you use.
 Some debugging info is printed into console while working.
+
+##TODO
+
+- Some proxies respond with only a part of requested content. May be it is possible to track such cases with content-length header analysis.
