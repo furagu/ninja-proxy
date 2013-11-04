@@ -60,7 +60,7 @@ ProxyRequest.prototype.proxy_request = function (saved_request, proxy_list, call
                 used_proxies.push(proxy)
                 make_request()
             } else {
-                proxy_list.failed(used_proxies)
+                proxy_list.proxyFailed(used_proxies)
                 callback.call(that, response)
             }
         })
