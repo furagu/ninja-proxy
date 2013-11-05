@@ -35,3 +35,4 @@ Some debugging info is printed into console while working.
 ##TODO
 
 - Some proxies respond with only a part of requested content. May be it is possible to track such cases with content-length header analysis.
+- Ninja-proxy could validate proxies itself using httpbin.org.
